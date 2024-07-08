@@ -35,7 +35,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         PeerToPeerLendingLibrary.Deposit storage deposit = deposits[msg.sender];
         if (_amount > deposit.amount) revert InsufficientDepositAmount();
 
-        //TODO How many tokens should be transferred to the user?
+        //TODO
 
         emit WithdrawalMade(msg.sender, _amount);
     }

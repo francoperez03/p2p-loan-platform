@@ -9,6 +9,8 @@ library PeerToPeerLendingLibrary {
         uint256 lastClaimed;
     }
 
+    enum LoanState { Pending, Active, Repaid }
+
     struct Loan {
         address lender;
         address borrower;
@@ -17,5 +19,6 @@ library PeerToPeerLendingLibrary {
         uint256 startTime;
         uint256 duration;
         uint256 amountRepaid;
+        LoanState state;
     }
 }

@@ -38,7 +38,7 @@ interface IPeerToPeerLending {
                             LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(uint256 _amount, uint256 _interestRate) external;
+    function deposit(uint256 _amount) external;
     function withdraw(uint256 _amount) external;
     function requestLoan(address _lender, uint256 _amount, uint256 _interestRate, uint256 _duration) external;
     function approveLoan(address _borrower, uint256 _amount, uint256 _interestRate, uint256 _duration) external;
@@ -50,4 +50,6 @@ interface IPeerToPeerLending {
 
     function calculateTotalAmountDue(uint256 _loanId) external view returns (uint256);
     function getLoanDetails(uint256 _loanId) external view returns (PeerToPeerLendingLibrary.Loan memory);
+    function getDepositInformation(address _depositor) external view returns (uint256 principal, uint256 interestRate, uint256 lastClaimed, uint256 interestEarned);
+    function getAvailableAmountAndRate(address _lender) external view returns (uint256 availableAmount, uint256 interestRate);
 }
