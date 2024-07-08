@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import { LoanToken} from "../src/LoanToken.sol";
+import { LoanToken} from "../contracts/LoanToken.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TestLoanToken is Test {
