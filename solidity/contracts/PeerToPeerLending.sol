@@ -5,61 +5,105 @@ import {IPeerToPeerLending} from "../interfaces/IPeerToPeerLending.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {PeerToPeerLendingLibrary} from "../libraries/PeerToPeerLendingLibrary.sol";
 
+interface IInterestRateProvider {
+    function getInterestRate(address lender) external view returns (uint256);
+}
+
 contract PeerToPeerLending is IPeerToPeerLending {
     IERC20 public token;
-    mapping(address => PeerToPeerLendingLibrary.Deposit) public deposits;
+    mapping(address => uint256[]) public depositIdsByAddress;
+    PeerToPeerLendingLibrary.Deposit[] public deposits;
     mapping(uint256 => PeerToPeerLendingLibrary.Loan) public loans;
-    uint256 public loanCounter;
 
-    constructor(IERC20 _token) {
-        token = _token;
+    uint256 public depositCounter;
+    uint256 public loanCounter;
+    uint256 public depositInterestRate;
+
+    uint256 constant DECIMALS = 1e18;
+
+    constructor(address _token, uint256 _depositInterestRate) {
+        token = IERC20(_token);
+        depositInterestRate = _depositInterestRate;
     }
 
-    function deposit(uint256 _amount, uint256 _interestRate) external override {
+
+    function calculateInterestEarned(uint256 _depositId) public view returns (uint256) {
+        PeerToPeerLendingLibrary.Deposit storage calculateDeposit = deposits[_depositId];
+        uint256 timeElapsed = block.timestamp - calculateDeposit.lastUpdated;
+        uint256 interestEarned = calculateDeposit.amount * calculateDeposit.interestRate * timeElapsed / (365 days * DECIMALS);
+        return interestEarned;
+    }
+
+    function deposit(uint256 _amount) external override returns (uint256 _depositId) {
         if (_amount <= 0) revert DepositAmountMustBeGreaterThanZero();
-        if (_interestRate <= 0) revert InterestRateMustBeGreaterThanZero();
 
         token.transferFrom(msg.sender, address(this), _amount);
 
-        deposits[msg.sender] = PeerToPeerLendingLibrary.Deposit({
+        uint256 depositId = depositCounter++;
+        deposits.push(PeerToPeerLendingLibrary.Deposit({
+            id: depositId,
             depositor: msg.sender,
             amount: _amount,
-            interestRate: _interestRate,
-            lastClaimed: block.timestamp
+            interestRate: depositInterestRate,
+            lastUpdated: block.timestamp
+        }));
+
+        emit DepositMade(msg.sender, _amount, depositInterestRate);
+
+        return depositId;
+    }
+
+    function withdraw(uint256 _depositId) external override {
+        PeerToPeerLendingLibrary.Deposit storage withdrawDeposit = deposits[_depositId];
+
+        uint256 interestEarned = calculateInterestEarned(_depositId);
+        uint256 amountToWithdraw = withdrawDeposit.amount;
+        withdrawDeposit.amount = 0;
+        withdrawDeposit.lastUpdated = block.timestamp;
+
+
+        token.transfer(msg.sender, amountToWithdraw + interestEarned);
+
+        emit WithdrawalMade(msg.sender, amountToWithdraw + interestEarned);
+    }
+
+    function requestLoan(address _lender, uint256 _amount, uint256 _duration) external override {
+        if (_amount <= 0) revert LoanAmountMustBeGreaterThanZero();
+        if (_duration <= 0) revert DurationMustBeGreaterThanZero();
+
+        uint256 interestRate = 10 ether;
+        loanCounter++;
+        loans[loanCounter] = PeerToPeerLendingLibrary.Loan({
+            id: loanCounter,
+            lender: _lender,
+            borrower: msg.sender,
+            principal: _amount,
+            interestRate: interestRate,
+            startTime: block.timestamp,
+            duration: _duration,
+            amountRepaid: 0,
+            state: PeerToPeerLendingLibrary.LoanState.Pending
         });
 
-        emit DepositMade(msg.sender, _amount, _interestRate);
+        emit LoanRequested(msg.sender, _lender, _amount, interestRate, _duration);
     }
 
-    function withdraw(uint256 _amount) external override {
-        PeerToPeerLendingLibrary.Deposit storage deposit = deposits[msg.sender];
-        if (_amount > deposit.amount) revert InsufficientDepositAmount();
+    function approveLoan(uint256 _loanId) external override {
+        PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
+        require(msg.sender == loan.lender, "Only the lender can approve this loan.");
+        require(loan.state == PeerToPeerLendingLibrary.LoanState.Pending, "Loan is not pending.");
 
-        //TODO
+        PeerToPeerLendingLibrary.Deposit storage approveDeposit = deposits[1];
+        if (approveDeposit.amount < loan.principal) revert InsufficientDepositAmount();
 
-        emit WithdrawalMade(msg.sender, _amount);
-    }
+        approveDeposit.amount -= loan.principal;
+        loan.state = PeerToPeerLendingLibrary.LoanState.Active;
+        loan.startTime = block.timestamp;
 
-    function requestLoan(address _lender, uint256 _amount, uint256 _interestRate, uint256 _duration) external override {
-        if (_amount <= 0) revert LoanAmountMustBeGreaterThanZero();
-        if (_interestRate <= 0) revert InterestRateMustBeGreaterThanZero();
-        if (_duration <= 0) revert DurationMustBeGreaterThanZero();
-        if (deposits[_lender].amount < _amount) revert LenderDoesNotHaveEnoughTokens();
-        //TODO
+        token.transfer(loan.borrower, loan.principal);
 
-        emit LoanRequested(msg.sender, _lender, _amount, _interestRate, _duration);
-    }
-
-    function approveLoan(address _borrower, uint256 _amount, uint256 _interestRate, uint256 _duration) external override {
-        PeerToPeerLendingLibrary.Deposit storage deposit = deposits[msg.sender];
-        if (deposit.amount < _amount) revert InsufficientDepositAmount();
-        if (deposit.interestRate != _interestRate) revert InterestRateMismatch();
-
-        deposit.amount -= _amount;
-
-        //TODO
-
-        loanCounter++;
+        emit LoanApproved(_loanId, loan.lender, loan.borrower, loan.principal, loan.interestRate, loan.duration);
+        emit LoanStateChanged(_loanId, PeerToPeerLendingLibrary.LoanState.Active);
     }
 
     function repayLoan(uint256 _loanId, uint256 _amount) external override {
@@ -67,18 +111,48 @@ contract PeerToPeerLending is IPeerToPeerLending {
         if (msg.sender != loan.borrower) revert OnlyBorrowerCanRepay();
         if (_amount <= 0) revert RepaymentAmountMustBeGreaterThanZero();
         
-       //TODO
+        uint256 totalDue = calculateTotalAmountDue(_loanId);
+        if (loan.amountRepaid + _amount > totalDue) revert RepaymentExceedsLoanAmount();
+
+        loan.amountRepaid += _amount;
+        if (loan.amountRepaid >= totalDue) {
+            loan.state = PeerToPeerLendingLibrary.LoanState.Repaid;
+            emit LoanStateChanged(_loanId, PeerToPeerLendingLibrary.LoanState.Repaid);
+        }
+
+        token.transferFrom(msg.sender, loan.lender, _amount);
 
         emit RepaymentMade(_loanId, _amount);
     }
 
-    function calculateTotalAmountDue(uint256 _loanId) public view override returns (uint256) {
-        PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
-        uint256 totalDue = 0;     //TODO
-        return totalDue;
+
+    //PURE-VIEW
+
+    function getDepositInformation(uint256 _depositId) external view override returns (uint256 principal, uint256 interestRate, uint256 lastUpdated, uint256 interestEarned) {
+        PeerToPeerLendingLibrary.Deposit storage infoDeposit = deposits[_depositId];
+
+        principal = infoDeposit.amount;
+        interestRate = infoDeposit.interestRate;
+        lastUpdated = infoDeposit.lastUpdated;
+        interestEarned = calculateInterestEarned(_depositId);
+
+        return (principal, interestRate, lastUpdated, interestEarned);
     }
 
-    function getLoanDetails(uint256 _loanId) external view override returns (PeerToPeerLendingLibrary.Loan memory) {
-        return loans[_loanId];
+    function calculateTotalAmountDue(uint256 _loanId) public view returns (uint256) {
+        PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
+        uint256 interest = loan.principal * loan.interestRate / 100 * loan.duration / 365 days;
+        return loan.principal + interest;
+    }
+
+    function getLoanDetails(uint256 _loanId) external view override returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue) {
+        PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
+        totalAmountDue = calculateTotalAmountDue(_loanId);
+        return (loan, totalAmountDue);
+    }
+
+    function getAvailableAmountAndRate() external pure override returns (uint256 availableAmount, uint256 interestRate) {
+
+        return (1, 2);
     }
 }

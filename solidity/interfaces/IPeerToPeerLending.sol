@@ -18,6 +18,8 @@ interface IPeerToPeerLending {
     event LoanRequested(address indexed borrower, address indexed lender, uint256 amount, uint256 interestRate, uint256 duration);
     event LoanApproved(uint256 indexed loanId, address indexed lender, address indexed borrower, uint256 amount, uint256 interestRate, uint256 duration);
     event RepaymentMade(uint256 indexed loanId, uint256 amount);
+    event WithdrawalMade(address indexed depositor, uint256 amount);
+    event LoanStateChanged(uint256 indexed loanId, PeerToPeerLendingLibrary.LoanState newState);
 
     /*///////////////////////////////////////////////////////////////
                             ERRORS
@@ -38,18 +40,17 @@ interface IPeerToPeerLending {
                             LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(uint256 _amount) external;
+    function deposit(uint256 _amount) external returns (uint256 _depositId);
     function withdraw(uint256 _amount) external;
-    function requestLoan(address _lender, uint256 _amount, uint256 _interestRate, uint256 _duration) external;
-    function approveLoan(address _borrower, uint256 _amount, uint256 _interestRate, uint256 _duration) external;
+    function requestLoan(address _lender, uint256 _amount, uint256 _duration) external;
+    function approveLoan(uint256 _loanId)  external;
     function repayLoan(uint256 _loanId, uint256 _amount) external;
 
     /*///////////////////////////////////////////////////////////////
                     GETTERS (PURE AND VIEW)
     //////////////////////////////////////////////////////////////*/
 
-    function calculateTotalAmountDue(uint256 _loanId) external view returns (uint256);
-    function getLoanDetails(uint256 _loanId) external view returns (PeerToPeerLendingLibrary.Loan memory);
-    function getDepositInformation(address _depositor) external view returns (uint256 principal, uint256 interestRate, uint256 lastClaimed, uint256 interestEarned);
-    function getAvailableAmountAndRate(address _lender) external view returns (uint256 availableAmount, uint256 interestRate);
+    function getLoanDetails(uint256 _loanId) external view returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue);
+    function getDepositInformation(uint256 _depositId) external view returns (uint256 principal, uint256 interestRate, uint256 lastUpdated, uint256 interestEarned);
+    function getAvailableAmountAndRate() external pure returns (uint256 availableAmount, uint256 interestRate);
 }
