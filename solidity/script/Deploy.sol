@@ -5,6 +5,8 @@ import {Script} from 'forge-std/Script.sol';
 import {IPeerToPeerLending} from '../interfaces/IPeerToPeerLending.sol';
 import {PeerToPeerLending} from '../contracts/PeerToPeerLending.sol';
 import {LoanToken} from '../contracts/LoanToken.sol';
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 
 contract Deploy is Script {
 
@@ -14,10 +16,8 @@ contract Deploy is Script {
   uint256 INTEREST_RATE = 10e16;
 
   function run() external {
-    deployer = vm.rememberKey(vm.envUint('DEPLOYER_PRIVATE_KEY'));
-
-    vm.startBroadcast(deployer);
-    token = new LoanToken(deployer);
+    vm.startBroadcast();
+    token = new LoanToken(msg.sender);
     lendingContract = new PeerToPeerLending(address(token), INTEREST_RATE);
     vm.stopBroadcast();
 
