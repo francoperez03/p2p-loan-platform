@@ -45,7 +45,8 @@ contract PeerToPeerLending is IPeerToPeerLending {
             depositor: msg.sender,
             amount: _amount,
             interestRate: depositInterestRate,
-            lastUpdated: block.timestamp
+            lastUpdated: block.timestamp,
+            createdAt: block.timestamp
         }));
 
         emit DepositMade(msg.sender, _amount, depositInterestRate);
@@ -128,15 +129,14 @@ contract PeerToPeerLending is IPeerToPeerLending {
 
     //PURE-VIEW
 
-    function getDepositInformation(uint256 _depositId) external view override returns (uint256 principal, uint256 interestRate, uint256 lastUpdated, uint256 interestEarned) {
+    function getDeposit(uint256 _depositId) external view override returns (PeerToPeerLendingLibrary.Deposit memory, uint256 interestEarned) {
         PeerToPeerLendingLibrary.Deposit storage infoDeposit = deposits[_depositId];
-
-        principal = infoDeposit.amount;
-        interestRate = infoDeposit.interestRate;
-        lastUpdated = infoDeposit.lastUpdated;
         interestEarned = calculateInterestEarned(_depositId);
+        return (infoDeposit, interestEarned);
+    }
 
-        return (principal, interestRate, lastUpdated, interestEarned);
+    function getDepositIdsByAddress(address user) external view returns (uint256[] memory) {
+        return depositIdsByAddress[user];
     }
 
     function calculateTotalAmountDue(uint256 _loanId) public view returns (uint256) {
@@ -145,7 +145,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         return loan.principal + interest;
     }
 
-    function getLoanDetails(uint256 _loanId) external view override returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue) {
+    function getLoan(uint256 _loanId) external view override returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue) {
         PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
         totalAmountDue = calculateTotalAmountDue(_loanId);
         return (loan, totalAmountDue);

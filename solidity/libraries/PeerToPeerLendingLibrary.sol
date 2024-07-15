@@ -7,6 +7,7 @@ library PeerToPeerLendingLibrary {
         address depositor;
         uint256 amount;
         uint256 interestRate;
+        uint256 createdAt;
         uint256 lastUpdated;
     }
 

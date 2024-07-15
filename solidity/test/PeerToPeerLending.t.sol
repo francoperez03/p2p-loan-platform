@@ -20,7 +20,7 @@ contract PeerToPeerLendingTest is Test {
         owner = address(this);
 
         token = new MockERC20("Mock Token", "MTK", 18);
-        lendingContract = new PeerToPeerLending(IERC20(address(token)), 10e16);
+        lendingContract = new PeerToPeerLending(address(token), 10e16);
 
         token.mint(user1, USER_INITAL_BALANCE);
         token.mint(address(lendingContract), CONTRACT_INITAL_BALANCE);
@@ -33,10 +33,10 @@ contract PeerToPeerLendingTest is Test {
 
         uint256 depositId = lendingContract.deposit(TOKENS_TO_DEPOSIT);
         uint256 balanceAfter = token.balanceOf(user1);
-        (uint256 principal, , , ) = lendingContract.getDepositInformation(depositId);
+        (PeerToPeerLendingLibrary.Deposit memory deposit, ) = lendingContract.getDeposit(depositId);
 
         assertEq(balanceBefore - TOKENS_TO_DEPOSIT, balanceAfter);
-        assertEq(principal, TOKENS_TO_DEPOSIT);
+        assertEq(deposit.amount, TOKENS_TO_DEPOSIT);
         vm.stopPrank();
     }
 
@@ -56,15 +56,15 @@ contract PeerToPeerLendingTest is Test {
         vm.stopPrank();
     }
 
-    function testGetDepositInformation() public {
+    function testGetDeposit() public {
         vm.startPrank(user1);
         token.approve(address(lendingContract), TOKENS_TO_DEPOSIT);
         lendingContract.deposit(TOKENS_TO_DEPOSIT);
 
         vm.warp(block.timestamp + 30 days);
 
-        (uint256 principal,, , uint256 interestEarned) = lendingContract.getDepositInformation(0);
-        assertEq(principal, TOKENS_TO_DEPOSIT);
+        (PeerToPeerLendingLibrary.Deposit memory deposit, uint256 interestEarned) = lendingContract.getDeposit(0);
+        assertEq(deposit.amount, TOKENS_TO_DEPOSIT);
         assertGt(interestEarned, 0);
 
         vm.stopPrank();

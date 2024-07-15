@@ -50,7 +50,8 @@ interface IPeerToPeerLending {
                     GETTERS (PURE AND VIEW)
     //////////////////////////////////////////////////////////////*/
 
-    function getLoanDetails(uint256 _loanId) external view returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue);
-    function getDepositInformation(uint256 _depositId) external view returns (uint256 principal, uint256 interestRate, uint256 lastUpdated, uint256 interestEarned);
+    function getLoan(uint256 _loanId) external view returns (PeerToPeerLendingLibrary.Loan memory, uint256 totalAmountDue);
+    function getDeposit(uint256 _depositId) external view returns (PeerToPeerLendingLibrary.Deposit memory, uint256 interestEarned);
+    function getDepositIdsByAddress(address user) external view returns (uint256[] memory);
     function getAvailableAmountAndRate() external pure returns (uint256 availableAmount, uint256 interestRate);
 }
