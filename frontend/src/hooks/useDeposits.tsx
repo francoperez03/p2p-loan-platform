@@ -1,18 +1,22 @@
-import { useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt, useSignTypedData } from 'wagmi';
+import { useReadContract, useReadContracts, useWriteContract, UseReadContractsReturnType, useWaitForTransactionReceipt } from 'wagmi';
 import { useState, useEffect, useMemo } from 'react';
 import { useWeb3 } from './useWeb3';
 import { lendingContract } from '../utils/contractAddresses';
-import { DepositWithInterest } from '../types/deposit';
+import { DepositWithInterest, LocalDeposit } from '../types/deposit';
 import { useInterestRate } from './useInterestRate';
 import useSignPermit from './useSignPermit';
 
 const GET_DEPOSIT_BY_ADDRESS_FUNCTION_NAME = 'getDepositIdsByAddress'
+const GET_DEPOSIT_FUNCTION_NAME = 'getDeposit'
+const DEPOSIT_WITH_PERMIT_FUNCTION_NAME = 'depositWithPermit'
+const WITHDRAW_FUNCTION_NAME = 'withdraw'
+
 export const useDeposits = () => {
   const { isConnected, address, gasPrice } = useWeb3();
   const [deposits, setDeposits] = useState<DepositWithInterest[]>([]);
   const { interestRate, interestRateLoading } = useInterestRate();
-  const { data: depositHash, isPending: depositLoading, writeContract: writeDeposit, error } = useWriteContract();
-  const { isLoading: depositIsConfirming, isSuccess: depositConfirmed, error: depositError } = useWaitForTransactionReceipt({ hash: depositHash });
+  const { data: depositHash, isPending: depositLoading, writeContract: writeDeposit} = useWriteContract();
+  const { isLoading: depositIsConfirming, isSuccess: depositConfirmed } = useWaitForTransactionReceipt({ hash: depositHash });
   const signPermit = useSignPermit();
 
 
@@ -29,18 +33,20 @@ export const useDeposits = () => {
     return (localDepositIds).map(depositId => ({
       address: lendingContract.testnet,
       abi: lendingContract.abi,
-      functionName: 'getDeposit',
+      functionName: GET_DEPOSIT_FUNCTION_NAME,
       args: [depositId],
     }));
   }, [depositIds]);
 
-  const { data: depositsData, isLoading: depositsDataLoading } = useReadContracts({
+  const { data: depositsData, isLoading: depositsDataLoading } : UseReadContractsReturnType =  useReadContracts({
     contracts: contractCalls,
   });
 
   useEffect(() => {
     if (depositsData && depositsData.length > 0) {
-      const localDepositsData = depositsData?.map(depositData => ({ deposit: depositData.result[0], interestEarned: depositData.result[1]}))
+      const localDepositsData: LocalDeposit[] | undefined = depositsData?.map(depositData => ({
+        deposit: depositData.result[0], interestEarned: depositData.result[1],
+      }));
       setDeposits(localDepositsData as DepositWithInterest[]);
     }
   }, [depositsData]);
@@ -52,8 +58,22 @@ export const useDeposits = () => {
       writeDeposit({
         address: lendingContract.testnet,
         abi: lendingContract.abi,
-        functionName: 'depositWithPermit',
+        functionName: DEPOSIT_WITH_PERMIT_FUNCTION_NAME,
         args: [value, deadline, v, r, s],
+        gasPrice,
+      });
+    } catch (error) {
+      console.error('Error during deposit:', error);
+    }
+  };
+
+  const withdraw = async (depositId: bigint) => {
+    try {
+      writeDeposit({
+        address: lendingContract.testnet,
+        abi: lendingContract.abi,
+        functionName: WITHDRAW_FUNCTION_NAME,
+        args: [depositId],
         gasPrice,
       });
     } catch (error) {
@@ -69,8 +89,9 @@ export const useDeposits = () => {
     interestRate,
     loading: depositIdsLoading || depositsDataLoading || interestRateLoading,
     deposit,
+    withdraw,
     depositLoading,
     depositIsConfirming,
-    depositConfirmed
+    depositConfirmed,
   };
 };

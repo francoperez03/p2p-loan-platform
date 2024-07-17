@@ -1,7 +1,7 @@
 // types.ts
 
 export interface Deposit {
-  id: number;
+  id: bigint;
   depositor: string;
   amount: bigint;
   interestRate: bigint;
@@ -35,4 +35,14 @@ export interface DepositWithInterest {
 export interface LoanWithAmountDue {
   loan: Loan;
   totalAmountDue: bigint;
+}
+
+export interface DepositDataResult {
+  result: [Deposit, bigint];
+  isLoading: boolean
+}
+
+export interface LocalDeposit {
+  deposit: Deposit;
+  interestEarned: bigint;
 }

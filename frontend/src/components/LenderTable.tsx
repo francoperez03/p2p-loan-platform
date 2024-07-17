@@ -2,7 +2,7 @@ import React from 'react';
 import {  Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { useDeposits } from '../hooks/useDeposits';
 
-const DepositTable: React.FC = () => {
+const LenderTable: React.FC = () => {
   const { deposits, loading, isConnected, withdraw } = useDeposits();
 
   return (
@@ -23,12 +23,9 @@ const DepositTable: React.FC = () => {
           >
             <TableHead>
               <TableRow>
-                <TableCell align="center">Number</TableCell>
-                <TableCell align="center">Created at</TableCell>
-                <TableCell align="center">Amount</TableCell>
-                <TableCell align="center">Earned</TableCell>
-                <TableCell align="center">InterestRate</TableCell>
-                <TableCell align="center">Withdraw</TableCell>
+                <TableCell align="center">Address</TableCell>
+                <TableCell align="center">Tokens available</TableCell>
+                <TableCell align="center">Ask</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -43,10 +40,7 @@ const DepositTable: React.FC = () => {
                 >
                   <TableCell align="center">{row.deposit.id.toString()}</TableCell>
                   <TableCell align="center">{new Date(Number(row.deposit.createdAt) * 1000).toLocaleString()}</TableCell>
-                  <TableCell align="center">{row.deposit.amount.toString()}</TableCell>
-                  <TableCell align="center">{row.interestEarned.toString()}</TableCell>
-                  <TableCell align="center">{row.deposit.interestRate.toString()}</TableCell>
-                  <TableCell align="center"><Button onClick={()=>{withdraw(row.deposit.id)}}>Withdraw</Button></TableCell>
+                  <TableCell align="center"><Button onClick={()=>{withdraw(row.deposit.id)}}>Ask</Button></TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -57,4 +51,4 @@ const DepositTable: React.FC = () => {
   );
 };
 
-export { DepositTable };
+export { LenderTable };

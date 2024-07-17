@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { useDeposits } from '../hooks/useDeposits';
 
-const DepositForm: React.FC = () => {
+const QuoteLoanForm: React.FC = () => {
   const { 
     address,
     interestRate,
@@ -69,4 +69,4 @@ const DepositForm: React.FC = () => {
   );
 };
 
-export { DepositForm };
+export { QuoteLoanForm };

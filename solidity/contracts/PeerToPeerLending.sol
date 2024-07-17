@@ -82,16 +82,30 @@ contract PeerToPeerLending is IPeerToPeerLending {
 
     function withdraw(uint256 _depositId) external override {
         PeerToPeerLendingLibrary.Deposit storage withdrawDeposit = deposits[_depositId];
-
         uint256 interestEarned = calculateInterestEarned(_depositId);
         uint256 amountToWithdraw = withdrawDeposit.amount;
+        
+        require(withdrawDeposit.depositor == msg.sender, "Not the depositor");
         withdrawDeposit.amount = 0;
         withdrawDeposit.lastUpdated = block.timestamp;
 
+        _removeDepositId(msg.sender, _depositId);
 
         token.transfer(msg.sender, amountToWithdraw + interestEarned);
 
         emit WithdrawalMade(msg.sender, amountToWithdraw + interestEarned);
+    }
+
+     function _removeDepositId(address _depositor, uint256 _depositId) internal {
+        uint256[] storage ids = depositIdsByAddress[_depositor];
+        uint256 length = ids.length;
+        for (uint256 i = 0; i < length; i++) {
+            if (ids[i] == _depositId) {
+                ids[i] = ids[length - 1];
+                ids.pop();
+                break;
+            }
+        }
     }
 
     function requestLoan(address _lender, uint256 _amount, uint256 _duration) external override {
