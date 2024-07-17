@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {IPeerToPeerLending} from "../interfaces/IPeerToPeerLending.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {PeerToPeerLendingLibrary} from "../libraries/PeerToPeerLendingLibrary.sol";
-
-interface IInterestRateProvider {
-    function getInterestRate(address lender) external view returns (uint256);
-}
+import { IPeerToPeerLending } from "../interfaces/IPeerToPeerLending.sol";
+import { IERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { PeerToPeerLendingLibrary } from "../libraries/PeerToPeerLendingLibrary.sol";
+import { Sfs } from "../interfaces/ISfs.sol";
 
 contract PeerToPeerLending is IPeerToPeerLending {
     IERC20 public token;
@@ -20,10 +18,12 @@ contract PeerToPeerLending is IPeerToPeerLending {
     uint256 public depositInterestRate;
 
     uint256 constant DECIMALS = 1e18;
-
+  
     constructor(address _token, uint256 _depositInterestRate) {
         token = IERC20(_token);
         depositInterestRate = _depositInterestRate;
+        Sfs sfsContract = Sfs(0xBBd707815a7F7eb6897C7686274AFabd7B579Ff6);
+        sfsContract.register(msg.sender);
     }
 
 
@@ -34,11 +34,8 @@ contract PeerToPeerLending is IPeerToPeerLending {
         return interestEarned;
     }
 
-    function deposit(uint256 _amount) external override returns (uint256 _depositId) {
-        if (_amount <= 0) revert DepositAmountMustBeGreaterThanZero();
 
-        token.transferFrom(msg.sender, address(this), _amount);
-
+    function _deposit(uint256 _amount) internal returns(uint256 _depositId) {
         uint256 depositId = depositCounter++;
         deposits.push(PeerToPeerLendingLibrary.Deposit({
             id: depositId,
@@ -48,11 +45,40 @@ contract PeerToPeerLending is IPeerToPeerLending {
             lastUpdated: block.timestamp,
             createdAt: block.timestamp
         }));
+        depositIdsByAddress[msg.sender].push(depositId);
+
+        token.transferFrom(msg.sender, address(this), _amount);
 
         emit DepositMade(msg.sender, _amount, depositInterestRate);
-
         return depositId;
     }
+
+    function deposit(uint256 _amount) external override returns (uint256 _depositId) {
+      return _deposit(_amount);
+    }
+
+    function depositWithPermit(
+        uint256 _amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external override returns (uint256 _depositId) {
+        if (_amount <= 0) revert DepositAmountMustBeGreaterThanZero();
+
+        IERC20Permit(address(token)).permit(
+            msg.sender,
+            address(this),
+            _amount,
+            deadline,
+            v,
+            r,
+            s
+        );
+
+        return _deposit(_amount);
+    }
+
 
     function withdraw(uint256 _depositId) external override {
         PeerToPeerLendingLibrary.Deposit storage withdrawDeposit = deposits[_depositId];

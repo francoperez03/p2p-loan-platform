@@ -4,3 +4,6 @@
 [submodule "solidity/lib/openzeppelin-contracts"]
 	path = solidity/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "solidity/lib/foundry-devops"]
+	path = solidity/lib/foundry-devops
+	url = https://github.com/Cyfrin/foundry-devops

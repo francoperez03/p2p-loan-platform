@@ -1,16 +1,14 @@
 import React from 'react';
-import { Alert, Box, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {  Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { useDeposits } from '../hooks/useDeposits';
 
 const DepositTable: React.FC = () => {
-  const { deposits, loading, error } = useDeposits();
+  const { deposits, loading, isConnected } = useDeposits();
 
   return (
     <Box sx={{ m: 4 }}>
-      {loading ? (
+      {loading || !isConnected? (
         <Skeleton variant="rectangular" width={800} height={500} />
-      ) : error ? (
-        <Alert severity="error">{}</Alert>
       ) : (
         <TableContainer>
           <Table
@@ -30,6 +28,7 @@ const DepositTable: React.FC = () => {
                 <TableCell align="center">Amount</TableCell>
                 <TableCell align="center">Earned</TableCell>
                 <TableCell align="center">InterestRate</TableCell>
+                <TableCell align="center">Withdraw</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -47,6 +46,7 @@ const DepositTable: React.FC = () => {
                   <TableCell align="center">{row.deposit.amount.toString()}</TableCell>
                   <TableCell align="center">{row.interestEarned.toString()}</TableCell>
                   <TableCell align="center">{row.deposit.interestRate.toString()}</TableCell>
+                  <TableCell align="center"><Button>Withdraw</Button></TableCell>
                 </TableRow>
               ))}
             </TableBody>

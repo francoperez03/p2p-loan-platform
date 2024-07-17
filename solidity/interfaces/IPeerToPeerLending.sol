@@ -41,6 +41,13 @@ interface IPeerToPeerLending {
     //////////////////////////////////////////////////////////////*/
 
     function deposit(uint256 _amount) external returns (uint256 _depositId);
+    function depositWithPermit(
+        uint256 _amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    )  external returns (uint256 _depositId);
     function withdraw(uint256 _amount) external;
     function requestLoan(address _lender, uint256 _amount, uint256 _duration) external;
     function approveLoan(uint256 _loanId)  external;

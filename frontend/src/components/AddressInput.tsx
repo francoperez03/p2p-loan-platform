@@ -1,5 +1,5 @@
-import { Button, Grid, TextField } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Grid } from "@mui/material";
+import React from "react";
 import ConnectButton from "./ConnectButton";
 import { useWeb3 } from "../hooks/useWeb3";
 
@@ -14,7 +14,6 @@ const AddressInput: React.FC = () => {
           <h5>Please, connect your wallet</h5>:
           <h5>Hello {address}</h5>
         }
-        
         <ConnectButton
           connectWallet={connectWallet}
           disconnectWallet={disconnectWallet}
@@ -25,4 +24,4 @@ const AddressInput: React.FC = () => {
   );
 }
 
-export default AddressInput;
+export { AddressInput };

@@ -1,5 +1,5 @@
 import { createWeb3Modal, useWeb3Modal } from '@web3modal/wagmi/react';
-import { useAccount, useChainId, useDisconnect } from 'wagmi';
+import { useAccount, useChainId, useDisconnect, useGasPrice } from 'wagmi';
 import { wagmiConfig, WALLET_CONNECT_PROJECT_ID } from '../utils/wagmi';
 import { useCallback } from 'react';
 
@@ -16,6 +16,8 @@ export const useWeb3 = () => {
   const chainId = useChainId()
   const { disconnect } = useDisconnect()
   const { open } = useWeb3Modal();
+  const { data: gasPrice } = useGasPrice()
+
 
   const connectWallet = useCallback(() => {
     if (!isConnected) {
@@ -29,5 +31,5 @@ export const useWeb3 = () => {
     }
   },[isConnected, disconnect])
 
-  return { connectWallet, disconnectWallet, status, address, chainId, isConnected}
+  return { connectWallet, disconnectWallet, status, address, chainId, gasPrice, isConnected}
 };

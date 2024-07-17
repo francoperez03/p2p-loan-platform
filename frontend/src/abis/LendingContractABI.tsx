@@ -37,6 +37,11 @@ const lendingContractABI: Abi = [
     outputs: [{ name: "_depositId", type: "uint256", internalType: "uint256" }],
     stateMutability: "nonpayable"
   },
+  { type:"function",
+    name:"depositWithPermit",
+    inputs:[{"name":"_amount","type":"uint256","internalType":"uint256"},{"name":"deadline","type":"uint256","internalType":"uint256"},{"name":"v","type":"uint8","internalType":"uint8"},{"name":"r","type":"bytes32","internalType":"bytes32"},{"name":"s","type":"bytes32","internalType":"bytes32"}],
+    outputs:[{"name":"_depositId","type":"uint256","internalType":"uint256"}],
+    stateMutability:"nonpayable"},
   {
     type: "function",
     name: "depositCounter",
