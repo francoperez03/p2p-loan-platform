@@ -2,7 +2,7 @@ import { useReadContract, useReadContracts, useWriteContract, UseReadContractsRe
 import { useState, useEffect, useMemo } from 'react';
 import { useWeb3 } from './useWeb3';
 import { lendingContract } from '../utils/contractAddresses';
-import { DepositWithInterest, LocalDeposit } from '../types/deposit';
+import { Deposit, DepositWithInterest, LocalDeposit } from '../types/deposit';
 import { useInterestRate } from './useInterestRate';
 import useSignPermit from './useSignPermit';
 
@@ -44,9 +44,11 @@ export const useDeposits = () => {
 
   useEffect(() => {
     if (depositsData && depositsData.length > 0) {
-      const localDepositsData: LocalDeposit[] | undefined = depositsData?.map(depositData => ({
-        deposit: depositData.result[0], interestEarned: depositData.result[1],
-      }));
+      const localDepositsData: LocalDeposit[] | undefined = depositsData?.map(depositData => {
+        const deposit: Deposit = depositData.result[0]
+        const interestEarned = depositData.result ? (depositData.result[1] as bigint / BigInt(1e16)) : 0n
+        return {deposit, interestEarned}
+      });
       setDeposits(localDepositsData as DepositWithInterest[]);
     }
   }, [depositsData]);

@@ -1,13 +1,37 @@
-import React from 'react';
-import {  Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { useDeposits } from '../hooks/useDeposits';
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Button, 
+  Skeleton, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  TextField
+} from '@mui/material';
+import { useWeb3 } from '../hooks/useWeb3'; // Asegúrate de importar este hook
+import { useAllDepositors } from '../hooks/useInfoToBorrow';
 
 const LenderTable: React.FC = () => {
-  const { deposits, loading, isConnected, withdraw } = useDeposits();
+  const { allDepositors, depositorsLoading } = useAllDepositors();
+
+  const { isConnected } = useWeb3();
+  const [loanAmounts, setLoanAmounts] = useState<{ [address: string]: string }>({});
+
+  const handleLoanAmountChange = (address: string, amount: string) => {
+    setLoanAmounts(prev => ({ ...prev, [address]: amount }));
+  };
+
+  const handleRequestLoan = (lenderAddress: string) => {
+    const amount = BigInt(loanAmounts[lenderAddress] || '0');
+    // requestLoan(lenderAddress, amount);
+  };
 
   return (
     <Box sx={{ m: 4 }}>
-      {loading || !isConnected? (
+      {depositorsLoading ? (
         <Skeleton variant="rectangular" width={800} height={500} />
       ) : (
         <TableContainer>
@@ -23,24 +47,42 @@ const LenderTable: React.FC = () => {
           >
             <TableHead>
               <TableRow>
-                <TableCell align="center">Address</TableCell>
-                <TableCell align="center">Tokens available</TableCell>
-                <TableCell align="center">Ask</TableCell>
+                <TableCell align="center">Lender Address</TableCell>
+                <TableCell align="center">Total Tokens Deposited</TableCell>
+                <TableCell align="center">Loan Amount</TableCell>
+                <TableCell align="center">Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {deposits.map((row) => (
+              {allDepositors.map(({ address, amount }) => (
                 <TableRow
-                  key={row.deposit.id}
+                  key={address}
                   sx={{ 
                     '&:hover': { backgroundColor: '#f5f5f5' }, 
                     cursor: 'pointer',
                     backgroundColor: 'inherit',
                   }}
                 >
-                  <TableCell align="center">{row.deposit.id.toString()}</TableCell>
-                  <TableCell align="center">{new Date(Number(row.deposit.createdAt) * 1000).toLocaleString()}</TableCell>
-                  <TableCell align="center"><Button onClick={()=>{withdraw(row.deposit.id)}}>Ask</Button></TableCell>
+                  <TableCell align="center">{address}</TableCell>
+                  <TableCell align="center">{amount.toString()}</TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      type="number"
+                      value={loanAmounts[address] || ''}
+                      onChange={(e) => handleLoanAmountChange(address, e.target.value)}
+                      disabled={!isConnected}
+                      size="small"
+                      sx={{ width: '120px' }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Button 
+                      onClick={() => handleRequestLoan(address)}
+                      disabled={!isConnected || !loanAmounts[address]}
+                    >
+                      Request Loan
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

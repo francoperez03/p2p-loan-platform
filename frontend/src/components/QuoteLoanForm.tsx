@@ -28,9 +28,6 @@ const QuoteLoanForm: React.FC = () => {
       <Typography variant="h6" gutterBottom>
         Make a Deposit
       </Typography>
-      <Typography variant="body1" sx={{ mt: 2 }}>
-        Yearly Interest Rate: {interestRate.toString()}%
-      </Typography>
       <TextField
         label="Amount"
         variant="outlined"

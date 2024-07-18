@@ -9,6 +9,12 @@ import { Sfs } from "../interfaces/ISfs.sol";
 
 contract PeerToPeerLending is IPeerToPeerLending {
     IERC20 public token;
+
+    address[] public allDepositors;
+    mapping(address => bool) public isDepositor;
+    mapping(address => uint256) public totalDeposits;
+
+    address[] public allLenders;
     mapping(address => uint256[]) public depositIdsByAddress;
     PeerToPeerLendingLibrary.Deposit[] public deposits;
     mapping(uint256 => PeerToPeerLendingLibrary.Loan) public loans;
@@ -46,6 +52,12 @@ contract PeerToPeerLending is IPeerToPeerLending {
             createdAt: block.timestamp
         }));
         depositIdsByAddress[msg.sender].push(depositId);
+
+        if (!isDepositor[msg.sender]) {
+            allDepositors.push(msg.sender);
+            isDepositor[msg.sender] = true;
+        }
+        totalDeposits[msg.sender] += _amount;
 
         token.transferFrom(msg.sender, address(this), _amount);
 
@@ -90,6 +102,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         withdrawDeposit.lastUpdated = block.timestamp;
 
         _removeDepositId(msg.sender, _depositId);
+        totalDeposits[msg.sender] -= amountToWithdraw;
 
         token.transfer(msg.sender, amountToWithdraw + interestEarned);
 
@@ -173,6 +186,14 @@ contract PeerToPeerLending is IPeerToPeerLending {
         PeerToPeerLendingLibrary.Deposit storage infoDeposit = deposits[_depositId];
         interestEarned = calculateInterestEarned(_depositId);
         return (infoDeposit, interestEarned);
+    }
+
+    function getAllDepositors() public view returns (address[] memory, uint256[] memory) {
+        uint256[] memory amounts = new uint256[](allDepositors.length);
+        for (uint i = 0; i < allDepositors.length; i++) {
+            amounts[i] = totalDeposits[allDepositors[i]];
+        }
+        return (allDepositors, amounts);
     }
 
     function getDepositIdsByAddress(address user) external view returns (uint256[] memory) {

@@ -1,5 +1,7 @@
 // types.ts
 
+import { Address } from "viem";
+
 export interface Deposit {
   id: bigint;
   depositor: string;
@@ -46,3 +48,6 @@ export interface LocalDeposit {
   deposit: Deposit;
   interestEarned: bigint;
 }
+
+
+export interface AllDepositors [da:string]
