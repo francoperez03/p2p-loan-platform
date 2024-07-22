@@ -13,6 +13,7 @@ export const useAllDepositors = () => {
     abi: lendingContract.abi,
     functionName: GET_ALL_DEPOSITORS_FUNCTION_NAME,
   });
+  console.log({depositorsData})
 
   useEffect(() => {
     if (depositorsData) {

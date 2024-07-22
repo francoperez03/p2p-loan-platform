@@ -120,6 +120,15 @@ const lendingContractABI: Abi = [
     stateMutability: "view"
   },
   {
+    "type":"function","name":"getAllDepositors",
+    "inputs":[],
+    "outputs":[
+      {"name":"","type":"address[]","internalType":"address[]"},
+      {"name":"","type":"uint256[]","internalType":"uint256[]"}
+    ],
+    "stateMutability":"view"
+  },
+  {
     type: "function",
     name: "getLoan",
     inputs: [{ name: "_loanId", type: "uint256", internalType: "uint256" }],

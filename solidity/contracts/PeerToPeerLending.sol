@@ -61,7 +61,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
 
         token.transferFrom(msg.sender, address(this), _amount);
 
-        emit DepositMade(msg.sender, _amount, depositInterestRate);
+        emit DepositMade(msg.sender, _amount  , depositInterestRate);
         return depositId;
     }
 

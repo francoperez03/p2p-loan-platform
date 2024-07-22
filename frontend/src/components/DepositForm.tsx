@@ -8,9 +8,6 @@ const DepositForm: React.FC = () => {
     interestRate,
     isConnected,
     deposit,
-    depositLoading,
-    depositIsConfirming,
-    depositConfirmed
   } = useDeposits();
 
   const [amount, setAmount] = useState<bigint>(0n);
@@ -22,14 +19,8 @@ const DepositForm: React.FC = () => {
 
   return (
     <Box sx={{ mt: 4 }}>
-      <>{depositLoading}</>
-      <>{depositIsConfirming}</>
-      <>{depositConfirmed}</>
-      <Typography variant="h6" gutterBottom>
-        Make a Deposit
-      </Typography>
       <Typography variant="body1" sx={{ mt: 2 }}>
-        Yearly Interest Rate: {interestRate.toString()}%
+        Annual interest rate: {interestRate.toString()}%
       </Typography>
       <TextField
         label="Amount"

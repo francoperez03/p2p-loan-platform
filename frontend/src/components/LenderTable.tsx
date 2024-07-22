@@ -24,11 +24,6 @@ const LenderTable: React.FC = () => {
     setLoanAmounts(prev => ({ ...prev, [address]: amount }));
   };
 
-  const handleRequestLoan = (lenderAddress: string) => {
-    const amount = BigInt(loanAmounts[lenderAddress] || '0');
-    // requestLoan(lenderAddress, amount);
-  };
-
   return (
     <Box sx={{ m: 4 }}>
       {depositorsLoading ? (
@@ -49,6 +44,7 @@ const LenderTable: React.FC = () => {
               <TableRow>
                 <TableCell align="center">Lender Address</TableCell>
                 <TableCell align="center">Total Tokens Deposited</TableCell>
+                <TableCell align="center">Annual interest rate %</TableCell>
                 <TableCell align="center">Loan Amount</TableCell>
                 <TableCell align="center">Action</TableCell>
               </TableRow>
@@ -65,6 +61,7 @@ const LenderTable: React.FC = () => {
                 >
                   <TableCell align="center">{address}</TableCell>
                   <TableCell align="center">{amount.toString()}</TableCell>
+                  <TableCell align="center">{amount.toString()}</TableCell>
                   <TableCell align="center">
                     <TextField
                       type="number"
@@ -77,7 +74,7 @@ const LenderTable: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Button 
-                      onClick={() => handleRequestLoan(address)}
+                      onClick={() => {}}
                       disabled={!isConnected || !loanAmounts[address]}
                     >
                       Request Loan

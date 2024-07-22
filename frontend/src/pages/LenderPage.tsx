@@ -5,6 +5,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AddressInput } from "../components/AddressInput";
 import { DepositTable } from "../components/DepositTable";
 import { DepositForm } from "../components/DepositForm";
+import { LoanStatusTable } from '../components/LoanStatusTable';
 
 const LenderPage: React.FC = () => {
   return (
@@ -47,6 +48,12 @@ const LenderPage: React.FC = () => {
           My Deposits
         </Typography>
         <DepositTable />
+      </Box>
+      <Box my={4}>
+        <Typography variant="h4" gutterBottom>
+          Status of my issued loans
+        </Typography>
+        <LoanStatusTable isBorrower={false} />
       </Box>
     </Container>
   );

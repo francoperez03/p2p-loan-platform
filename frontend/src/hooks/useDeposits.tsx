@@ -14,13 +14,14 @@ const WITHDRAW_FUNCTION_NAME = 'withdraw'
 export const useDeposits = () => {
   const { isConnected, address, gasPrice } = useWeb3();
   const [deposits, setDeposits] = useState<DepositWithInterest[]>([]);
-  const { interestRate, interestRateLoading } = useInterestRate();
-  const { data: depositHash, isPending: depositLoading, writeContract: writeDeposit} = useWriteContract();
+  const { interestRate } = useInterestRate();
+  const { data: depositHash, isPending: depositLoading, writeContract: writeDeposit, error: writeError} = useWriteContract();
   const { isLoading: depositIsConfirming, isSuccess: depositConfirmed } = useWaitForTransactionReceipt({ hash: depositHash });
   const signPermit = useSignPermit();
 
+  const [error, setError] = useState<boolean | null>(null);
 
-  const { data: depositIds, isLoading: depositIdsLoading } = useReadContract({
+  const { data: depositIds, isLoading: depositIdsLoading, refetch: refetchDepositIds } = useReadContract({
     address: lendingContract.testnet,
     abi: lendingContract.abi,
     functionName: GET_DEPOSIT_BY_ADDRESS_FUNCTION_NAME,
@@ -28,9 +29,9 @@ export const useDeposits = () => {
   });
 
   const contractCalls = useMemo(() => {
-    const localDepositIds: number[] = depositIds as number[]
+    const localDepositIds: number[] = depositIds as number[];
     if (!depositIds || localDepositIds.length === 0) return [];
-    return (localDepositIds).map(depositId => ({
+    return localDepositIds.map(depositId => ({
       address: lendingContract.testnet,
       abi: lendingContract.abi,
       functionName: GET_DEPOSIT_FUNCTION_NAME,
@@ -38,26 +39,33 @@ export const useDeposits = () => {
     }));
   }, [depositIds]);
 
-  const { data: depositsData, isLoading: depositsDataLoading } : UseReadContractsReturnType =  useReadContracts({
+  const { data: depositsData, isLoading: depositsDataLoading, refetch: refetchDepositsData } : UseReadContractsReturnType =  useReadContracts({
     contracts: contractCalls,
   });
 
   useEffect(() => {
     if (depositsData && depositsData.length > 0) {
       const localDepositsData: LocalDeposit[] | undefined = depositsData?.map(depositData => {
-        const deposit: Deposit = depositData.result[0]
-        const interestEarned = depositData.result ? (depositData.result[1] as bigint / BigInt(1e16)) : 0n
-        return {deposit, interestEarned}
+        const deposit: Deposit = depositData.result[0];
+        const interestEarned = depositData.result ? (depositData.result[1] as bigint) : 0n;
+        return {deposit, interestEarned};
       });
       setDeposits(localDepositsData as DepositWithInterest[]);
     }
   }, [depositsData]);
 
+  useEffect(()=>{
+    if(depositConfirmed){
+      console.log({depositConfirmed})
+      refetchDepositIds();
+    }
+  },[depositConfirmed, refetchDepositIds])
 
   const deposit = async (amountToDeposit: bigint) => {
+    setError(null);
     try {
-      const {value, deadline, v,r,s} = await signPermit({spender: lendingContract.testnet, value: amountToDeposit} )
-      writeDeposit({
+      const {value, deadline, v, r, s} = await signPermit({spender: lendingContract.testnet, value: amountToDeposit});
+      await writeDeposit({
         address: lendingContract.testnet,
         abi: lendingContract.abi,
         functionName: DEPOSIT_WITH_PERMIT_FUNCTION_NAME,
@@ -65,13 +73,14 @@ export const useDeposits = () => {
         gasPrice,
       });
     } catch (error) {
-      console.error('Error during deposit:', error);
+      setError(true);
     }
   };
 
   const withdraw = async (depositId: bigint) => {
+    setError(null);
     try {
-      writeDeposit({
+      await writeDeposit({
         address: lendingContract.testnet,
         abi: lendingContract.abi,
         functionName: WITHDRAW_FUNCTION_NAME,
@@ -79,21 +88,23 @@ export const useDeposits = () => {
         gasPrice,
       });
     } catch (error) {
-      console.error('Error during deposit:', error);
+      setError(true);
     }
   };
-
 
   return {
     address,
     isConnected,
     deposits,
     interestRate,
-    loading: depositIdsLoading || depositsDataLoading || interestRateLoading,
+    loading: depositIdsLoading || depositsDataLoading ,
+    transactionLoading: depositLoading || depositIsConfirming,
+    error: writeError || error,
+    success: depositConfirmed,
     deposit,
     withdraw,
     depositLoading,
     depositIsConfirming,
     depositConfirmed,
   };
-};
+}
