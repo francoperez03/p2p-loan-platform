@@ -6,8 +6,10 @@ import { AddressInput } from "../components/AddressInput";
 import { DepositTable } from "../components/DepositTable";
 import { DepositForm } from "../components/DepositForm";
 import { LoanStatusTable } from '../components/LoanStatusTable';
+import { useWeb3 } from '../hooks/useWeb3';
 
 const LenderPage: React.FC = () => {
+  const {isConnected} = useWeb3()
   return (
     <Container maxWidth="lg" sx={{ position: 'relative', paddingTop: '60px' }}>
       <Box 
@@ -36,25 +38,29 @@ const LenderPage: React.FC = () => {
         <AddressInput />
       </Box>
       
-      <Box my={4}>
-        <Typography variant="h4" gutterBottom>
-          Make a Deposit
-        </Typography>
-        <DepositForm />
-      </Box>
-      
-      <Box my={4}>
-        <Typography variant="h4" gutterBottom>
-          My Deposits
-        </Typography>
-        <DepositTable />
-      </Box>
-      <Box my={4}>
-        <Typography variant="h4" gutterBottom>
-          Status of my issued loans
-        </Typography>
-        <LoanStatusTable isBorrower={false} />
-      </Box>
+      {isConnected && 
+      <>
+        <Box my={4}>
+          <Typography variant="h4" gutterBottom>
+            Make a Deposit
+          </Typography>
+          <DepositForm />
+        </Box>
+        
+        <Box my={4}>
+          <Typography variant="h4" gutterBottom>
+            My Deposits
+          </Typography>
+          <DepositTable />
+        </Box>
+        <Box my={4}>
+          <Typography variant="h4" gutterBottom>
+            Status of my issued loans
+          </Typography>
+          <LoanStatusTable isBorrower={false} />
+        </Box>
+        </>
+      }
     </Container>
   );
 }

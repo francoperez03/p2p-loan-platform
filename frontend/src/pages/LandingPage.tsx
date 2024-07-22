@@ -78,7 +78,7 @@ const LandingPage: React.FC = () => {
           </Grid>
         </Grid>
 
-        <Box textAlign="center" my={6}>
+        <Box textAlign="center" my={12}>
           <Typography variant="h4" gutterBottom>
             Ready to Get Started?
           </Typography>
@@ -112,13 +112,6 @@ const LandingPage: React.FC = () => {
         <Box component="footer" sx={{ mt: 8, py: 3, borderTop: '1px solid', borderColor: 'divider' }}>
           <Typography variant="body2" align="center">
             © {new Date().getFullYear()} LendConnect. All rights reserved.
-          </Typography>
-          <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-            <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Service</Link>
-            {' | '}
-            <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</Link>
-            {' | '}
-            <Link to="/contact" style={{ color: 'inherit', textDecoration: 'none' }}>Contact Us</Link>
           </Typography>
         </Box>
       </Container>

@@ -5,8 +5,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AddressInput } from "../components/AddressInput";
 import { LenderTable } from "../components/LenderTable";
 import { LoanStatusTable } from '../components/LoanStatusTable';
+import { useWeb3 } from '../hooks/useWeb3';
 
 const BorrowerPage: React.FC = () => {
+  const { isConnected } = useWeb3()
+
   return (
     <Container maxWidth="lg" sx={{ position: 'relative', paddingTop: '60px' }}>
       <Box 
@@ -36,16 +39,16 @@ const BorrowerPage: React.FC = () => {
       
       <Box my={4}>
         <Typography variant="h4" gutterBottom>
-          Ask for a loan
+         Request a loan
         </Typography>
         <LenderTable />
       </Box>
-      <Box my={8}>
+      {isConnected && <Box my={8}>
         <Typography variant="h4" gutterBottom>
           My loans
         </Typography>
         <LoanStatusTable isBorrower={true} />
-      </Box>
+      </Box>}
     </Container>
   );
 }

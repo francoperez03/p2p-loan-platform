@@ -11,8 +11,8 @@ const AddressInput: React.FC = () => {
     <Grid container spacing={2} alignItems="center">
       <Grid item xs={12}>
         {!isConnected?
-          <h5>Please, connect your wallet</h5>:
-          <h5>Hello {address}</h5>
+          <h3>Please, connect your wallet</h3>:
+          <h3>Hello {address}</h3>
         }
         <ConnectButton
           connectWallet={connectWallet}
