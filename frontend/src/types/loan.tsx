@@ -17,7 +17,7 @@ export interface Loan {
   interestRate: bigint;
   startTime: bigint;
   amountRepaid: bigint;
-  status: LoanState;
+  state: LoanState;
 }
 
 
