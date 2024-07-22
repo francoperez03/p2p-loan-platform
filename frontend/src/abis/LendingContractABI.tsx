@@ -213,6 +213,18 @@ const lendingContractABI: Abi = [
     stateMutability: "nonpayable"
   },
   {
+    type: "function",
+    name: "getLoansEmittedByAddress",
+    inputs: [{ name: "_lender", type: "address", internalType: "address" }],
+    outputs: [
+      { name: "emittedLoans", type: "tuple[]", internalType: "struct PeerToPeerLendingLibrary.Loan[]", components: [{ name: "id", type: "uint256", internalType: "uint256" }, { name: "lender", type: "address", internalType: "address" }, { name: "borrower", type: "address", internalType: "address" }, { name: "principal", type: "uint256", internalType: "uint256" }, { name: "interestRate", type: "uint256", internalType: "uint256" }, { name: "startTime", type: "uint256", internalType: "uint256" }, { name: "duration", type: "uint256", internalType: "uint256" }, { name: "amountRepaid", type: "uint256", internalType: "uint256" }, { name: "state", type: "uint8", internalType: "enum PeerToPeerLendingLibrary.LoanState" }] }], stateMutability: "view" },
+  { 
+    type: "function", 
+    name: "getLoansRequestedByAddress", 
+    inputs: [{ name: "_borrower", type: "address", internalType: "address" }],
+    outputs: [{ name: "requestedLoans", type: "tuple[]", internalType: "struct PeerToPeerLendingLibrary.Loan[]", components: [{ name: "id", type: "uint256", internalType: "uint256" },
+       { name: "lender", type: "address", internalType: "address" }, { name: "borrower", type: "address", internalType: "address" }, { name: "principal", type: "uint256", internalType: "uint256" }, { name: "interestRate", type: "uint256", internalType: "uint256" }, { name: "startTime", type: "uint256", internalType: "uint256" }, { name: "duration", type: "uint256", internalType: "uint256" }, { name: "amountRepaid", type: "uint256", internalType: "uint256" }, { name: "state", type: "uint8", internalType: "enum PeerToPeerLendingLibrary.LoanState" }] }], stateMutability: "view" },
+  {
     type: "event",
     name: "DepositMade",
     inputs: [

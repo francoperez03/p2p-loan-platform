@@ -20,8 +20,8 @@ contract Deploy is Script {
     vm.startBroadcast();
     token = new LoanToken(msg.sender);
     lendingContract = new PeerToPeerLending(address(token), INTEREST_RATE);
-    token.mint(msg.sender, 1 ether);
-    token.mint(address(lendingContract), 1 ether);
+    token.mint(msg.sender, 100 ether);
+    token.mint(address(lendingContract), 100 ether);
     vm.stopBroadcast();
 
   }

@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
-import { useDeposits } from '../hooks/useDeposits';
+import { useLoans } from '../hooks/useLoans';
+import { Loan, LoanStateEnum } from '../types/loan';
 
 const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorrower: boolean}) => {
-  const { deposits, loading, isConnected } = useDeposits();
+  const { loansRequested, loading, loansIssued, isConnected, repayLoan, approveLoan } = useLoans();
+  const [loans, setLoans] = useState<Loan[]>();
+  useEffect(()=>{
+    if(isBorrower){
+      setLoans(loansRequested)
+    } else{
+      setLoans(loansIssued)
+    }
+  }, [isBorrower, loansRequested, loansIssued])
+
+  useEffect(()=>{
+    if(isBorrower){
+      setLoans(loansRequested)
+    } else{
+      setLoans(loansIssued)
+    }
+  }, [loans])
 
   return (
     <Box sx={{ m: 4 }}>
@@ -27,36 +44,40 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
                   <TableCell align="center">Status</TableCell>
                   <TableCell align="center">{isBorrower ? 'From': 'To'}</TableCell>
                   <TableCell align="center">Current debt</TableCell>
-                  <TableCell align="center">Annual interest rate %</TableCell>
+                  <TableCell align="center">Annual interest rate</TableCell>
                   {isBorrower && <TableCell align="center">Amount to repay</TableCell>}
                   <TableCell align="center">Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {deposits.map((row) => (
+                {loans?.map((loan: Loan) => (
                   <TableRow
-                    key={row.deposit.id}
+                    key={loan.id}
                     sx={{
                       '&:hover': { backgroundColor: '#f5f5f5' },
                       cursor: 'pointer',
                       backgroundColor: 'inherit',
                     }}
                   >
-                    <TableCell align="center">{'APPROVED'}</TableCell>
-                    <TableCell align="center">{'0x3e24adA7AcD59223147b2bbc7BE2fB4cA03303F9'}</TableCell>
-                    <TableCell align="center">{row.deposit.interestRate.toString()}</TableCell>
-                    <TableCell align="center">{row.deposit.interestRate.toString()}</TableCell>
-                    <TableCell align="center">
-                      {isBorrower && <TextField
+                    <TableCell align="center">{LoanStateEnum[loan.state]}</TableCell>
+                    <TableCell align="center">{loan.lender}</TableCell>
+                    <TableCell align="center">{loan.principal.toString()}</TableCell>
+                    <TableCell align="center">{loan.interestRate.toString()}</TableCell>
+                    {isBorrower && <TableCell align="center">
+                      <TextField
                         type="number"
                         value={''}
                         onChange={()=>{}}
                         disabled={!isConnected}
                         size="small"
                         sx={{ width: '120px' }}
-                      />}
-                    </TableCell>
-                    <TableCell align="center"><Button onClick={() => {  }}>{isBorrower ? 'Repay': 'Approve'}</Button></TableCell>
+                      />
+                    </TableCell>}
+                    {isBorrower &&
+                      <TableCell align="center">
+                        <Button disabled={loan.state !== 1} onClick={() => { repayLoan(loan.id, 100n) }}>Repay</Button>
+                      </TableCell>}
+                    {!isBorrower && <TableCell align="center"><Button onClick={() => { approveLoan(loan.id) }}>Approve</Button></TableCell>}
                   </TableRow>
                 ))}
               </TableBody>

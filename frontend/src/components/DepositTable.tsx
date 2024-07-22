@@ -31,7 +31,7 @@ const DepositTable: React.FC = () => {
                   <TableCell align="center">Created at</TableCell>
                   <TableCell align="center">Amount</TableCell>
                   <TableCell align="center">Earned</TableCell>
-                  <TableCell align="center">InterestRate</TableCell>
+                  <TableCell align="center">Annual interest rate</TableCell>
                   <TableCell align="center">Withdraw</TableCell>
                 </TableRow>
               </TableHead>

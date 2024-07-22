@@ -11,13 +11,13 @@ import {
   TableRow,
   TextField
 } from '@mui/material';
-import { useWeb3 } from '../hooks/useWeb3'; // Asegúrate de importar este hook
 import { useAllDepositors } from '../hooks/useInfoToBorrow';
+import { useLoans } from '../hooks/useLoans';
 
 const LenderTable: React.FC = () => {
-  const { allDepositors, depositorsLoading } = useAllDepositors();
+  const { allDepositors, loading, interesRateProposed } = useAllDepositors();
+  const { isConnected, requestLoan } = useLoans();
 
-  const { isConnected } = useWeb3();
   const [loanAmounts, setLoanAmounts] = useState<{ [address: string]: string }>({});
 
   const handleLoanAmountChange = (address: string, amount: string) => {
@@ -26,7 +26,7 @@ const LenderTable: React.FC = () => {
 
   return (
     <Box sx={{ m: 4 }}>
-      {depositorsLoading ? (
+      {loading ? (
         <Skeleton variant="rectangular" width={800} height={500} />
       ) : (
         <TableContainer>
@@ -44,7 +44,7 @@ const LenderTable: React.FC = () => {
               <TableRow>
                 <TableCell align="center">Lender Address</TableCell>
                 <TableCell align="center">Total Tokens Deposited</TableCell>
-                <TableCell align="center">Annual interest rate %</TableCell>
+                <TableCell align="center">Annual interest rate</TableCell>
                 <TableCell align="center">Loan Amount</TableCell>
                 <TableCell align="center">Action</TableCell>
               </TableRow>
@@ -61,7 +61,7 @@ const LenderTable: React.FC = () => {
                 >
                   <TableCell align="center">{address}</TableCell>
                   <TableCell align="center">{amount.toString()}</TableCell>
-                  <TableCell align="center">{amount.toString()}</TableCell>
+                  <TableCell align="center">{interesRateProposed}</TableCell>
                   <TableCell align="center">
                     <TextField
                       type="number"
@@ -74,7 +74,7 @@ const LenderTable: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Button 
-                      onClick={() => {}}
+                      onClick={() => {requestLoan(address, loanAmounts[address])}}
                       disabled={!isConnected || !loanAmounts[address]}
                     >
                       Request Loan

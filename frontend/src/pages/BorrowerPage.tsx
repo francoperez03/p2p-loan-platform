@@ -40,11 +40,11 @@ const BorrowerPage: React.FC = () => {
         </Typography>
         <LenderTable />
       </Box>
-      <Box my={4}>
+      <Box my={8}>
         <Typography variant="h4" gutterBottom>
           My loans
         </Typography>
-        <LoanStatusTable isBorrower={true}/>
+        <LoanStatusTable isBorrower={true} />
       </Box>
     </Container>
   );

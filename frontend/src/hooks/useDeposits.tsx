@@ -5,6 +5,7 @@ import { lendingContract } from '../utils/contractAddresses';
 import { Deposit, DepositWithInterest, LocalDeposit } from '../types/deposit';
 import { useInterestRate } from './useInterestRate';
 import useSignPermit from './useSignPermit';
+import { formatBigInt } from '../utils/formatter';
 
 const GET_DEPOSIT_BY_ADDRESS_FUNCTION_NAME = 'getDepositIdsByAddress'
 const GET_DEPOSIT_FUNCTION_NAME = 'getDeposit'
@@ -39,7 +40,7 @@ export const useDeposits = () => {
     }));
   }, [depositIds]);
 
-  const { data: depositsData, isLoading: depositsDataLoading, refetch: refetchDepositsData } : UseReadContractsReturnType =  useReadContracts({
+  const { data: depositsData, isLoading: depositsDataLoading } : UseReadContractsReturnType =  useReadContracts({
     contracts: contractCalls,
   });
 
@@ -48,7 +49,10 @@ export const useDeposits = () => {
       const localDepositsData: LocalDeposit[] | undefined = depositsData?.map(depositData => {
         const deposit: Deposit = depositData.result[0];
         const interestEarned = depositData.result ? (depositData.result[1] as bigint) : 0n;
-        return {deposit, interestEarned};
+        const formattedDeposit = formatBigInt(deposit.amount);
+        const formattedInterest = formatBigInt(interestEarned);
+        const formattedInterestRate = formatBigInt(deposit.interestRate);
+        return { deposit: {...deposit, amount: formattedDeposit, interestRate: formattedInterestRate}, interestEarned: formattedInterest };
       });
       setDeposits(localDepositsData as DepositWithInterest[]);
     }
