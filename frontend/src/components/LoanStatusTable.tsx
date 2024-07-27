@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import { useLoans } from '../hooks/useLoans';
-import { Loan, LoanStateEnum } from '../types/loan';
+import { Loan, LoanState, LoanStateEnum } from '../types/loan';
 
 const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorrower: boolean}) => {
   const { loansRequested, loading, loansIssued, isConnected, repayLoan, approveLoan } = useLoans();
@@ -20,7 +20,7 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
     } else{
       setLoans(loansIssued)
     }
-  }, [loans])
+  }, [loans, isBorrower, loansIssued, loansRequested])
 
   return (
     <Box sx={{ m: 4 }}>
@@ -75,9 +75,14 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
                     </TableCell>}
                     {isBorrower &&
                       <TableCell align="center">
-                        <Button disabled={loan.state !== 1} onClick={() => { repayLoan(loan.id, 100n) }}>Repay</Button>
-                      </TableCell>}
-                    {!isBorrower && <TableCell align="center"><Button onClick={() => { approveLoan(loan.id) }}>Approve</Button></TableCell>}
+                        <Button disabled={loan.state !== LoanState.ACTIVE} onClick={() => { repayLoan(loan.id, 100n) }}>Repay</Button>
+                      </TableCell>
+                    }
+                    {!isBorrower && 
+                      <TableCell align="center">
+                        <Button disabled={loan.state !== LoanState.PENDING} onClick={() => { approveLoan(loan.id) }}>Approve</Button>
+                      </TableCell>
+                    }
                   </TableRow>
                 ))}
               </TableBody>

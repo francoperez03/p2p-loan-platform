@@ -1,7 +1,7 @@
 export enum LoanState {
-  Pending = 0,
-  Active = 1,
-  Repaid = 2
+  PENDING = 0,
+  ACTIVE = 1,
+  REPAID = 2
 }
 
 export const LoanStateEnum = {
