@@ -201,7 +201,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         return (infoDeposit, interestEarned);
     }
 
-    function getAllDepositors() external view returns (address[] memory, uint256[] memory) {
+    function getAllDepositors() external view override returns (address[] memory, uint256[] memory) {
         uint256[] memory amounts = new uint256[](allDepositors.length);
         for (uint i = 0; i < allDepositors.length; i++) {
             amounts[i] = totalDeposits[allDepositors[i]];
@@ -209,7 +209,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         return (allDepositors, amounts);
     }
 
-    function getAllAvailableFunds() external view returns (address[] memory, uint256[] memory) {
+    function getAllAvailableFunds() external view override returns (address[] memory, uint256[] memory) {
         uint256[] memory amounts = new uint256[](allDepositors.length);
         for (uint i = 0; i < allDepositors.length; i++) {
             amounts[i] = availableFunds[allDepositors[i]];
