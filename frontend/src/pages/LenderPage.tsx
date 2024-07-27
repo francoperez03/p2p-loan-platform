@@ -9,7 +9,7 @@ import { LoanStatusTable } from '../components/LoanStatusTable';
 import { useWeb3 } from '../hooks/useWeb3';
 
 const LenderPage: React.FC = () => {
-  const {isConnected} = useWeb3()
+  const { isConnected } = useWeb3()
   return (
     <Container maxWidth="lg" sx={{ position: 'relative', paddingTop: '60px' }}>
       <Box 

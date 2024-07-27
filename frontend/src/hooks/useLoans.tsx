@@ -2,11 +2,12 @@ import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 
 import { useState, useEffect } from 'react';
 import { useWeb3 } from './useWeb3';
 import { lendingContract } from '../utils/contractAddresses';
-import { Loan } from '../types/deposit';
+import { Loan } from '../types/loan';
+import useSignPermit from './useSignPermit';
 
 const REQUEST_LOAN_FUNCTION_NAME = 'requestLoan';
 const APPROVE_LOAN_FUNCTION_NAME = 'approveLoan';
-const REPAY_LOAN_FUNCTION_NAME = 'repayLoan';
+const REPAY_LOAN_WITH_PERMIT_FUNCTION_NAME = 'repayLoanWithPermit';
 const GET_LOAN_EMMITED_BY_ADDRESS_FUNCTION_NAME = 'getLoansEmittedByAddress';
 const GET_LOAN_REQUESTED_BY_ADDRESS_FUNCTION_NAME = 'getLoansRequestedByAddress';
 
@@ -30,6 +31,7 @@ export const useLoans = () => {
     functionName: GET_LOAN_REQUESTED_BY_ADDRESS_FUNCTION_NAME,
     args: [address],
   }) as { data: Loan[], isLoading: boolean, refetch: () => void } ;
+  const signPermit = useSignPermit();
 
   useEffect(()=>{
     if(loanConfirmed){
@@ -68,20 +70,24 @@ export const useLoans = () => {
     }
   };
 
-  const repayLoan = async (loanId: bigint, amount: bigint) => {
+  const repayLoan = async (loanId: bigint, amount: string) => {
     setError(null);
     try {
+      const {value, deadline, v, r, s} = await signPermit({spender: lendingContract.testnet, value: BigInt(amount)});
       await writeLoan({
         address: lendingContract.testnet,
         abi: lendingContract.abi,
-        functionName: REPAY_LOAN_FUNCTION_NAME,
-        args: [loanId, amount],
+        functionName: REPAY_LOAN_WITH_PERMIT_FUNCTION_NAME,
+        args: [loanId, value, deadline, v, r, s],
         gasPrice,
       });
     } catch (error) {
       setError(true);
     }
   };
+  if(writeError){
+    console.log({writeError})
+  }
 
   return {
     address,
@@ -100,3 +106,5 @@ export const useLoans = () => {
     loanConfirmed,
   };
 }
+
+

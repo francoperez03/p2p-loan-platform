@@ -49,7 +49,7 @@ const DepositTable: React.FC = () => {
                     <TableCell align="center">{new Date(Number(row.deposit.createdAt) * 1000).toLocaleString()}</TableCell>
                     <TableCell align="center">{row.deposit.amount.toString()}</TableCell>
                     <TableCell align="center">{row.interestEarned.toString()}</TableCell>
-                    <TableCell align="center">{row.deposit.interestRate.toString()}</TableCell>
+                    <TableCell align="center">{`${row.deposit.interestRate * 100}%`}</TableCell>
                     <TableCell align="center"><Button onClick={() => { withdraw(row.deposit.id); }}>Withdraw</Button></TableCell>
                   </TableRow>
                 ))}

@@ -168,7 +168,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         emit LoanStateChanged(_loanId, PeerToPeerLendingLibrary.LoanState.Active);
     }
 
-    function repayLoan(uint256 _loanId, uint256 _amount) external override {
+    function _repayLoan(uint256 _loanId, uint256 _amount) internal {
         PeerToPeerLendingLibrary.Loan storage loan = loans[_loanId];
         if (msg.sender != loan.borrower) revert OnlyBorrowerCanRepay();
         if (_amount <= 0) revert RepaymentAmountMustBeGreaterThanZero();
@@ -186,6 +186,34 @@ contract PeerToPeerLending is IPeerToPeerLending {
         token.transferFrom(msg.sender, loan.lender, _amount);
 
         emit RepaymentMade(_loanId, _amount);
+    }
+
+    function repayLoan(uint256 _loanId, uint256 _amount) external override {
+        return _repayLoan(_loanId, _amount);
+    }
+
+
+    function repayLoanWithPermit(
+        uint256 _loanId,
+        uint256 _amount,
+        uint256 _deadline,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s
+    ) external override {
+
+        IERC20Permit(address(token)).permit(
+            msg.sender,
+            address(this),
+            _amount,
+            _deadline,
+            _v,
+            _r,
+            _s
+        );
+
+        return _repayLoan(_loanId, _amount);
+
     }
 
     //PURE-VIEW

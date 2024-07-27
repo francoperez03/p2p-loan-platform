@@ -3,7 +3,7 @@ import { useReadContract } from "wagmi";
 import { lendingContract } from "../utils/contractAddresses";
 import { formatBigInt } from "../utils/formatter";
 
-const GET_ALL_DEPOSITORS_FUNCTION_NAME = 'getAllDepositors'
+const GET_ALL_AVAILABLE_FUNDS_FUNCTION_NAME = 'getAllAvailableFunds'
 const GET_AVAILABLE_AMOUNT_AND_RATE_FUNCTION_NAME = 'getAvailableAmountAndRate'
 
 export const useAllDepositors = () => {
@@ -15,7 +15,7 @@ export const useAllDepositors = () => {
   const { data: depositorsData, isLoading: depositorsLoading } = useReadContract({
     address: lendingContract.testnet,
     abi: lendingContract.abi,
-    functionName: GET_ALL_DEPOSITORS_FUNCTION_NAME,
+    functionName: GET_ALL_AVAILABLE_FUNDS_FUNCTION_NAME,
   }) as { data: [string[], bigint[]], isLoading: boolean};
 
   const { data: availableAmountAndRate, isLoading: availabeDataLoading } = useReadContract({

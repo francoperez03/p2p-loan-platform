@@ -3,9 +3,17 @@ import { Box, Button, Skeleton, Table, TableBody, TableCell, TableContainer, Tab
 import { useLoans } from '../hooks/useLoans';
 import { Loan, LoanState, LoanStateEnum } from '../types/loan';
 
+const BASE_BIG_INT = 10000000000000000n
 const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorrower: boolean}) => {
   const { loansRequested, loading, loansIssued, isConnected, repayLoan, approveLoan } = useLoans();
   const [loans, setLoans] = useState<Loan[]>();
+
+  const [repayAmounts, setRepayAmounts] = useState<{ [loanId: string]: string }>({});
+
+  const handleRepayAmountChange = (loanId: bigint, amount: string) => {
+    setRepayAmounts(prev => ({ ...prev, [loanId.toString()]: amount }));
+  };
+
   useEffect(()=>{
     if(isBorrower){
       setLoans(loansRequested)
@@ -21,7 +29,7 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
       setLoans(loansIssued)
     }
   }, [loans, isBorrower, loansIssued, loansRequested])
-
+  console.log(loans)
   return (
     <Box sx={{ m: 4 }}>
       {loading || !isConnected ? (
@@ -61,13 +69,13 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
                   >
                     <TableCell align="center">{LoanStateEnum[loan.state]}</TableCell>
                     <TableCell align="center">{loan.lender}</TableCell>
-                    <TableCell align="center">{loan.principal.toString()}</TableCell>
-                    <TableCell align="center">{loan.interestRate.toString()}</TableCell>
+                    <TableCell align="center">{(loan.principal - loan.amountRepaid).toString()}</TableCell>
+                    <TableCell align="center">{`${loan.interestRate / BASE_BIG_INT}%`}</TableCell>
                     {isBorrower && <TableCell align="center">
                       <TextField
                         type="number"
-                        value={''}
-                        onChange={()=>{}}
+                        value={repayAmounts[loan.id.toString()] || ''}
+                        onChange={(e) => handleRepayAmountChange(loan.id, e.target.value)}
                         disabled={!isConnected}
                         size="small"
                         sx={{ width: '120px' }}
@@ -75,7 +83,7 @@ const LoanStatusTable: React.FC<{isBorrower: boolean}> = ({isBorrower}: {isBorro
                     </TableCell>}
                     {isBorrower &&
                       <TableCell align="center">
-                        <Button disabled={loan.state !== LoanState.ACTIVE} onClick={() => { repayLoan(loan.id, 100n) }}>Repay</Button>
+                        <Button disabled={loan.state !== LoanState.ACTIVE} onClick={() => { repayLoan(loan.id, repayAmounts[loan.id.toString()]) }}>Repay</Button>
                       </TableCell>
                     }
                     {!isBorrower && 

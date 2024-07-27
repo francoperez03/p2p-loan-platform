@@ -129,6 +129,15 @@ const lendingContractABI: Abi = [
     "stateMutability":"view"
   },
   {
+    "type":"function","name":"getAllAvailableFunds",
+    "inputs":[],
+    "outputs":[
+      {"name":"","type":"address[]","internalType":"address[]"},
+      {"name":"","type":"uint256[]","internalType":"uint256[]"}
+    ],
+    "stateMutability":"view"
+  },
+  {
     type: "function",
     name: "getLoan",
     inputs: [{ name: "_loanId", type: "uint256", internalType: "uint256" }],
@@ -179,10 +188,14 @@ const lendingContractABI: Abi = [
   },
   {
     type: "function",
-    name: "repayLoan",
+    name: "repayLoanWithPermit",
     inputs: [
       { name: "_loanId", type: "uint256", internalType: "uint256" },
-      { name: "_amount", type: "uint256", internalType: "uint256" }
+      { name: "_amount", type: "uint256", internalType: "uint256" },
+      { name:"_deadline", type:"uint256", internalType:"uint256"},
+      { name:"_v", type:"uint8", internalType:"uint8"},
+      { name:"_r", type:"bytes32", internalType:"bytes32"},
+      { name:"_s", type:"bytes32", internalType:"bytes32"}
     ],
     outputs: [],
     stateMutability: "nonpayable"

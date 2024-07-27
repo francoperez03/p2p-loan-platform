@@ -61,7 +61,7 @@ const LenderTable: React.FC = () => {
                 >
                   <TableCell align="center">{address}</TableCell>
                   <TableCell align="center">{amount.toString()}</TableCell>
-                  <TableCell align="center">{interesRateProposed}</TableCell>
+                  <TableCell align="center">{`${interesRateProposed * 100}%`}</TableCell>
                   <TableCell align="center">
                     <TextField
                       type="number"

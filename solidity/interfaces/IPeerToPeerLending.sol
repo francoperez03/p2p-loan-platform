@@ -65,4 +65,5 @@ interface IPeerToPeerLending {
     function getLoansEmittedByAddress(address _lender) external view returns (PeerToPeerLendingLibrary.Loan[] memory emittedLoans);
     function getAvailableAmountAndRate() external pure returns (uint256 availableAmount, uint256 interestRate);
     function getAllAvailableFunds() external view returns (address[] memory, uint256[] memory);
+    function repayLoanWithPermit(uint256 _loanId, uint256 _amount, uint256 _deadline, uint8 _v, bytes32 _r,  bytes32 _s) external;
 }
