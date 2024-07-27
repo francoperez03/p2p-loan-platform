@@ -15,12 +15,14 @@ contract Deploy is Script {
   ILoanToken internal token;
   IPeerToPeerLending internal lendingContract;
   uint256 INTEREST_RATE = 10e16;
+  address USER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
   function run() external {
     vm.startBroadcast();
     token = new LoanToken(msg.sender);
     lendingContract = new PeerToPeerLending(address(token), INTEREST_RATE);
     token.mint(msg.sender, 100 ether);
+    token.mint(USER, 100 ether);
     token.mint(address(lendingContract), 100 ether);
     vm.stopBroadcast();
 

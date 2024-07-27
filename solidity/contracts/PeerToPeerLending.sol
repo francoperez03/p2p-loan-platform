@@ -13,6 +13,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
     address[] public allDepositors;
     mapping(address => bool) public isDepositor;
     mapping(address => uint256) public totalDeposits;
+    mapping(address => uint256) public availableFunds;
 
     address[] public allLenders;
     mapping(address => uint256[]) public depositIdsByAddress;
@@ -62,6 +63,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
             isDepositor[msg.sender] = true;
         }
         totalDeposits[msg.sender] += _amount;
+        availableFunds[msg.sender] += _amount;
 
         token.transferFrom(msg.sender, address(this), _amount);
 
@@ -95,7 +97,6 @@ contract PeerToPeerLending is IPeerToPeerLending {
         return _deposit(_amount);
     }
 
-
     function withdraw(uint256 _depositId) external override {
         PeerToPeerLendingLibrary.Deposit storage withdrawDeposit = deposits[_depositId];
         uint256 interestEarned = calculateInterestEarned(_depositId);
@@ -104,6 +105,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         require(withdrawDeposit.depositor == msg.sender, "Not the depositor");
         withdrawDeposit.amount = 0;
         withdrawDeposit.lastUpdated = block.timestamp;
+        availableFunds[msg.sender] -= amountToWithdraw;
 
         _removeDepositId(msg.sender, _depositId);
         totalDeposits[msg.sender] -= amountToWithdraw;
@@ -154,10 +156,9 @@ contract PeerToPeerLending is IPeerToPeerLending {
         require(msg.sender == loan.lender, "Only the lender can approve this loan.");
         require(loan.state == PeerToPeerLendingLibrary.LoanState.Pending, "Loan is not pending.");
 
-        PeerToPeerLendingLibrary.Deposit storage approveDeposit = deposits[1];
-        if (approveDeposit.amount < loan.principal) revert InsufficientDepositAmount();
+        if (availableFunds[loan.lender] < loan.principal) revert InsufficientDepositAmount();
 
-        approveDeposit.amount -= loan.principal;
+        availableFunds[loan.lender] -= loan.principal;
         loan.state = PeerToPeerLendingLibrary.LoanState.Active;
         loan.startTime = block.timestamp;
 
@@ -176,6 +177,7 @@ contract PeerToPeerLending is IPeerToPeerLending {
         if (loan.amountRepaid + _amount > totalDue) revert RepaymentExceedsLoanAmount();
 
         loan.amountRepaid += _amount;
+        availableFunds[msg.sender] += _amount;
         if (loan.amountRepaid >= totalDue) {
             loan.state = PeerToPeerLendingLibrary.LoanState.Repaid;
             emit LoanStateChanged(_loanId, PeerToPeerLendingLibrary.LoanState.Repaid);
@@ -185,7 +187,6 @@ contract PeerToPeerLending is IPeerToPeerLending {
 
         emit RepaymentMade(_loanId, _amount);
     }
-
 
     //PURE-VIEW
     function calculateTotalAmountDue(uint256 _loanId) internal view returns (uint256) {
@@ -204,6 +205,14 @@ contract PeerToPeerLending is IPeerToPeerLending {
         uint256[] memory amounts = new uint256[](allDepositors.length);
         for (uint i = 0; i < allDepositors.length; i++) {
             amounts[i] = totalDeposits[allDepositors[i]];
+        }
+        return (allDepositors, amounts);
+    }
+
+    function getAllAvailableFunds() external view returns (address[] memory, uint256[] memory) {
+        uint256[] memory amounts = new uint256[](allDepositors.length);
+        for (uint i = 0; i < allDepositors.length; i++) {
+            amounts[i] = availableFunds[allDepositors[i]];
         }
         return (allDepositors, amounts);
     }
