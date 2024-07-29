@@ -7,18 +7,16 @@ const BALANCE_OF_FUNCTION_NAME = 'balanceOf';
 export const useTokenBalance = () => {
   const { address } = useWeb3();
 
-  const { data: myBalance, isLoading: myBalanceLoading, error: myBalanceError } = useReadContract({
+  const { data: myBalance, isLoading: myBalanceLoading } = useReadContract({
     address: tokenContract.testnet,
     abi: tokenContract.abi,
     functionName: BALANCE_OF_FUNCTION_NAME,
     args: [address],
-  }) as { data: bigint, isLoading: boolean, error: Error};
+  }) as { data: bigint, isLoading: boolean};
 
-  console.log({myBalance, myBalanceLoading, myBalanceError})
   return {
     loading: myBalanceLoading,
-    myBalance,
-    error: myBalanceError
+    myBalance
   };
 }
 
